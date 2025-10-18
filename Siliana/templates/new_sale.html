@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+
+{% block title %}عملية بيع جديدة - نقطة البيع{% endblock %}
+
+{% block content %}
+<h2 style="color: #667eea; text-align: center; margin-bottom: 20px;">💰 عملية بيع جديدة</h2>
+
+{% if messages %}
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }}">
+        {{ message }}
+    </div>
+    {% endfor %}
+{% endif %}
+
+<form method="post">
+    {% csrf_token %}
+    
+    <div class="form-group" style="text-align: right;">
+        <label for="produit">اختر المنتج</label>
+        <select id="produit" name="produit" required onchange="updateProductInfo()">
+            <option value="">-- اختر المنتج --</option>
+            {% for product in products %}
+            <option value="{{ product.id }}" data-quantity="{{ product.quantite }}" data-price="{{ product.prix_vente }}">
+                {{ product.nom }} (متوفر: {{ product.quantite }})
+            </option>
+            {% endfor %}
+        </select>
+    </div>
+    
+    <div id="product-info" style="display: none; margin-bottom: 20px;">
+        <div class="card">
+            <p><strong>الكمية المتوفرة:</strong> <span id="available-quantity">0</span> قطعة</p>
+            <p><strong>سعر البيع:</strong> <span id="sale-price">0</span> د.ت</p>
+        </div>
+    </div>
+    
+    <div class="form-group" style="text-align: right;">
+        <label for="quantite">الكمية المباعة</label>
+        <input type="number" id="quantite" name="quantite" min="1" required oninput="calculateTotal()">
+    </div>
+    
+    <div id="total-info" style="display: none; margin-bottom: 20px;">
+        <div class="card" style="background: #d4edda; border-left-color: #28a745;">
+            <h3 style="color: #28a745;">الإجمالي</h3>
+            <p style="font-size: 24px; font-weight: bold; color: #155724;"><span id="total-amount">0</span> د.ت</p>
+        </div>
+    </div>
+    
+    <button type="submit" class="btn btn-success">✅ تأكيد البيع</button>
+    <a href="{% url 'home' %}" class="btn btn-secondary">إلغاء</a>
+</form>
+
+<script>
+function updateProductInfo() {
+    const select = document.getElementById('produit');
+    const option = select.options[select.selectedIndex];
+    
+    if (option.value) {
+        document.getElementById('available-quantity').textContent = option.dataset.quantity;
+        document.getElementById('sale-price').textContent = option.dataset.price;
+        document.getElementById('product-info').style.display = 'block';
+        document.getElementById('quantite').max = option.dataset.quantity;
+        calculateTotal();
+    } else {
+        document.getElementById('product-info').style.display = 'none';
+        document.getElementById('total-info').style.display = 'none';
+    }
+}
+
+function calculateTotal() {
+    const select = document.getElementById('produit');
+    const option = select.options[select.selectedIndex];
+    const quantity = document.getElementById('quantite').value;
+    
+    if (option.value && quantity) {
+        const price = parseFloat(option.dataset.price);
+        const total = price * quantity;
+        document.getElementById('total-amount').textContent = total.toFixed(2);
+        document.getElementById('total-info').style.display = 'block';
+    } else {
+        document.getElementById('total-info').style.display = 'none';
+    }
+}
+</script>
+{% endblock %}

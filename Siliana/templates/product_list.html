@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block title %}قائمة المنتجات - نقطة البيع{% endblock %}
+
+{% block content %}
+<h2 style="color: #667eea; text-align: center; margin-bottom: 20px;">📦 قائمة المنتجات</h2>
+
+<a href="{% url 'add_product' %}" class="btn btn-success">➕ إضافة منتج جديد</a>
+
+{% if messages %}
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }}">
+        {{ message }}
+    </div>
+    {% endfor %}
+{% endif %}
+
+<div style="margin-top: 20px;">
+    {% for product in products %}
+    <div class="card">
+        <h3>{{ product.nom }}</h3>
+        <p><strong>الكمية:</strong> {{ product.quantite }} قطعة</p>
+        <p><strong>سعر الشراء:</strong> {{ product.prix_achat }} د.ت</p>
+        <p><strong>سعر البيع:</strong> {{ product.prix_vente }} د.ت</p>
+        <div style="display: flex; gap: 10px; margin-top: 10px;">
+            <a href="{% url 'add_stock' product.id %}" style="flex: 1; text-align: center; padding: 8px; background: #28a745; color: white; border-radius: 5px; text-decoration: none; font-weight: bold;">➕ إضافة مخزون</a>
+            <a href="{% url 'edit_product' product.id %}" style="flex: 1; text-align: center; padding: 8px; background: #ffc107; color: #333; border-radius: 5px; text-decoration: none; font-weight: bold;">✏️ تعديل</a>
+        </div>
+    </div>
+    {% empty %}
+    <div class="alert alert-warning">
+        لا توجد منتجات حالياً. قم بإضافة منتج جديد.
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+
+{% block title %}الصفحة الرئيسية - نقطة البيع{% endblock %}
+
+{% block content %}
+<h2 style="color: #667eea; text-align: center; margin-bottom: 30px;">📊 لوحة التحكم</h2>
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <h4>عدد المنتجات</h4>
+        <div class="value">{{ total_products }}</div>
+    </div>
+    
+    <div class="stat-card">
+        <h4>المبيعات اليوم</h4>
+        <div class="value">{{ sales_today }}</div>
+    </div>
+    
+    <div class="stat-card">
+        <h4>إجمالي الإيرادات اليوم</h4>
+        <div class="value">{{ revenue_today }} د.ت</div>
+    </div>
+    
+    <div class="stat-card">
+        <h4>منتجات بحاجة إلى تجديد</h4>
+        <div class="value">{{ low_stock }}</div>
+    </div>
+</div>
+
+<div style="margin-top: 30px;">
+    <h3 style="color: #667eea; margin-bottom: 15px;">الوصول السريع</h3>
+    
+    <a href="{% url 'new_sale' %}" class="btn btn-success">💰 عملية بيع جديدة</a>
+    <a href="{% url 'product_list' %}" class="btn">📦 إدارة المنتجات</a>
+    <a href="{% url 'sales_report' %}" class="btn btn-secondary">📊 تقارير المبيعات</a>
+</div>
+
+{% if low_stock_products %}
+<div style="margin-top: 30px;">
+    <h3 style="color: #dc3545; margin-bottom: 15px;">⚠️ منتجات بحاجة إلى تجديد</h3>
+    {% for product in low_stock_products %}
+    <div class="card" style="border-left-color: #dc3545;">
+        <h3>{{ product.nom }}</h3>
+        <p><strong>الكمية المتبقية:</strong> {{ product.quantite }}</p>
+        <p><strong>سعر البيع:</strong> {{ product.prix_vente }} د.ت</p>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+{% endblock %}

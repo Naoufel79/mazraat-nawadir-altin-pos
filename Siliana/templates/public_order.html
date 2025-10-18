@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مزرعة نوادر التين - طلب منتجات</title>
+    {% load static %}
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .logo-container {
+            margin-bottom: 15px;
+        }
+        .logo {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: 4px solid white;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            background: white;
+            padding: 5px;
+        }
+        .header h1 {
+            font-size: 2em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+        .phone-number {
+            font-size: 22px;
+            font-weight: bold;
+            margin-top: 10px;
+            letter-spacing: 2px;
+        }
+        .form-container {
+            padding: 30px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: bold;
+        }
+        input[type="text"],
+        input[type="tel"],
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        input:focus,
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        .product-list {
+            margin-top: 30px;
+            border-top: 2px solid #667eea;
+            padding-top: 20px;
+        }
+        .product-item {
+            background: #f8f9fa;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            border: 2px solid #e9ecef;
+        }
+        .product-item.unavailable {
+            background: #ffe6e6;
+            border-color: #ffcccc;
+        }
+        .product-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .product-name {
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #333;
+        }
+        .product-price {
+            color: #667eea;
+            font-weight: bold;
+        }
+        .product-status {
+            font-size: 0.9em;
+            margin-bottom: 10px;
+        }
+        .available {
+            color: #28a745;
+        }
+        .unavailable-text {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        .quantity-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .quantity-control input {
+            width: 80px;
+            text-align: center;
+        }
+        .btn-submit {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 30px;
+            transition: transform 0.2s;
+        }
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        .btn-submit:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .alert {
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .required {
+            color: #dc3545;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo-container">
+                <img src="{% static 'images/logo.png' %}" alt="مزرعة نوادر التين" class="logo">
+            </div>
+            <h1>🛒 مزرعة نوادر التين</h1>
+            <div class="phone-number">☎ 20.707.272</div>
+        </div>
+        
+        <div class="form-container">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <form method="POST" id="orderForm">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label for="nom">الاسم <span class="required">*</span></label>
+                <input type="text" id="nom" name="nom" required>
+            </div>
+
+            <div class="form-group">
+                <label for="wilaya">الولاية (تونس) <span class="required">*</span></label>
+                <select id="wilaya" name="wilaya" required>
+                    <option value="">اختر الولاية</option>
+                    <option value="تونس">تونس</option>
+                    <option value="أريانة">أريانة</option>
+                    <option value="بن عروس">بن عروس</option>
+                    <option value="منوبة">منوبة</option>
+                    <option value="نابل">نابل</option>
+                    <option value="زغوان">زغوان</option>
+                    <option value="بنزرت">بنزرت</option>
+                    <option value="باجة">باجة</option>
+                    <option value="جندوبة">جندوبة</option>
+                    <option value="الكاف">الكاف</option>
+                    <option value="سليانة">سليانة</option>
+                    <option value="سوسة">سوسة</option>
+                    <option value="المنستير">المنستير</option>
+                    <option value="المهدية">المهدية</option>
+                    <option value="صفاقس">صفاقس</option>
+                    <option value="القيروان">القيروان</option>
+                    <option value="القصرين">القصرين</option>
+                    <option value="سيدي بوزيد">سيدي بوزيد</option>
+                    <option value="قابس">قابس</option>
+                    <option value="مدنين">مدنين</option>
+                    <option value="تطاوين">تطاوين</option>
+                    <option value="قفصة">قفصة</option>
+                    <option value="توزر">توزر</option>
+                    <option value="قبلي">قبلي</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="ville">المدينة <span class="required">*</span></label>
+                <input type="text" id="ville" name="ville" required>
+            </div>
+
+            <div class="form-group">
+                <label for="telephone">رقم الهاتف <span class="required">*</span></label>
+                <input type="tel" id="telephone" name="telephone" required placeholder="مثال: 20123456">
+            </div>
+
+            <div class="product-list">
+                <h2 style="color: #667eea; margin-bottom: 20px;">المنتجات المتوفرة</h2>
+                
+                {% for produit in produits %}
+                <div class="product-item {% if produit.quantite == 0 %}unavailable{% endif %}">
+                    <div class="product-header">
+                        <span class="product-name">{{ produit.nom }}</span>
+                        <span class="product-price">{{ produit.prix_vente }} د.ت</span>
+                    </div>
+                    
+                    <div class="product-status">
+                        {% if produit.quantite > 0 %}
+                            <span class="available">✓ متوفر ({{ produit.quantite }} قطعة)</span>
+                        {% else %}
+                            <span class="unavailable-text">✗ المنتج الآن غير متوفر</span>
+                        {% endif %}
+                    </div>
+                    
+                    {% if produit.quantite > 0 %}
+                    <div class="quantity-control">
+                        <label for="product_{{ produit.id }}">الكمية:</label>
+                        <input type="number" 
+                               id="product_{{ produit.id }}" 
+                               name="product_{{ produit.id }}" 
+                               min="0" 
+                               max="{{ produit.quantite }}" 
+                               value="0"
+                               class="product-quantity">
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+
+            <button type="submit" class="btn-submit">تأكيد الطلب</button>
+        </form>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('orderForm').addEventListener('submit', function(e) {
+            let hasProducts = false;
+            const quantities = document.querySelectorAll('.product-quantity');
+            
+            quantities.forEach(input => {
+                if (parseInt(input.value) > 0) {
+                    hasProducts = true;
+                }
+            });
+            
+            if (!hasProducts) {
+                e.preventDefault();
+                alert('الرجاء اختيار منتج واحد على الأقل');
+            }
+        });
+    </script>
+</body>
+</html>

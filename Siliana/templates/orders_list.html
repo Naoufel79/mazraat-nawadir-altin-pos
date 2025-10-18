@@ -1,0 +1,349 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="content-header">
+    <h2>📦 قائمة الطلبات</h2>
+</div>
+
+<style>
+    .orders-container {
+        padding: 20px;
+    }
+    .filter-section {
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .filter-group {
+        display: flex;
+        gap: 15px;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+    .filter-group select {
+        padding: 8px 12px;
+        border: 2px solid #ddd;
+        border-radius: 5px;
+        font-size: 14px;
+    }
+    .order-card {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        transition: transform 0.2s;
+    }
+    .order-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    .order-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+        padding-bottom: 15px;
+        border-bottom: 2px solid #f0f0f0;
+    }
+    .order-id {
+        font-size: 1.2em;
+        font-weight: bold;
+        color: #333;
+    }
+    .order-status {
+        padding: 5px 15px;
+        border-radius: 20px;
+        font-size: 0.9em;
+        font-weight: bold;
+    }
+    .status-pending {
+        background: #fff3cd;
+        color: #856404;
+    }
+    .status-confirmed {
+        background: #d1ecf1;
+        color: #0c5460;
+    }
+    .status-completed {
+        background: #d4edda;
+        color: #155724;
+    }
+    .status-cancelled {
+        background: #f8d7da;
+        color: #721c24;
+    }
+    .order-details {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+        margin-bottom: 15px;
+    }
+    .detail-item {
+        display: flex;
+        flex-direction: column;
+    }
+    .detail-label {
+        font-size: 0.85em;
+        color: #666;
+        margin-bottom: 5px;
+    }
+    .detail-value {
+        font-weight: bold;
+        color: #333;
+    }
+    .order-items {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 8px;
+        margin-top: 15px;
+    }
+    .order-items h4 {
+        color: #667eea;
+        margin-bottom: 10px;
+    }
+    .item-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 0;
+        border-bottom: 1px solid #dee2e6;
+    }
+    .item-row:last-child {
+        border-bottom: none;
+        font-weight: bold;
+        color: #667eea;
+        padding-top: 12px;
+        margin-top: 5px;
+        border-top: 2px solid #667eea;
+    }
+    .action-buttons {
+        display: flex;
+        gap: 10px;
+        margin-top: 15px;
+    }
+    .btn-action {
+        padding: 8px 20px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-weight: bold;
+        transition: all 0.3s;
+    }
+    .btn-confirm {
+        background: #28a745;
+        color: white;
+    }
+    .btn-confirm:hover {
+        background: #218838;
+    }
+    .btn-complete {
+        background: #007bff;
+        color: white;
+    }
+    .btn-complete:hover {
+        background: #0056b3;
+    }
+    .btn-cancel {
+        background: #dc3545;
+        color: white;
+    }
+    .btn-cancel:hover {
+        background: #c82333;
+    }
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: #666;
+    }
+    .empty-state i {
+        font-size: 4em;
+        margin-bottom: 20px;
+        color: #ccc;
+    }
+</style>
+
+<div class="orders-container">
+    <div class="filter-section">
+        <form method="GET" class="filter-group" id="filterForm">
+            <div style="display: flex; gap: 15px; flex-wrap: wrap; align-items: center;">
+                <div>
+                    <label>حالة الطلب:</label>
+                    <select name="status" onchange="this.form.submit()">
+                        <option value="">الكل</option>
+                        <option value="pending" {% if request.GET.status == 'pending' %}selected{% endif %}>قيد الانتظار</option>
+                        <option value="confirmed" {% if request.GET.status == 'confirmed' %}selected{% endif %}>مؤكد</option>
+                        <option value="completed" {% if request.GET.status == 'completed' %}selected{% endif %}>مكتمل</option>
+                        <option value="cancelled" {% if request.GET.status == 'cancelled' %}selected{% endif %}>ملغي</option>
+                    </select>
+                </div>
+                <div>
+                    <label>الولاية:</label>
+                    <select name="wilaya" onchange="this.form.submit()">
+                        <option value="">كل الولايات</option>
+                        {% for wilaya in wilayas %}
+                        <option value="{{ wilaya }}" {% if request.GET.wilaya == wilaya %}selected{% endif %}>{{ wilaya }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+        </form>
+        
+        {% if orders %}
+        <div style="margin-top: 15px; padding-top: 15px; border-top: 2px solid #e0e0e0;">
+            <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
+                <input type="checkbox" id="selectAll" style="width: 20px; height: 20px; cursor: pointer;">
+                <label for="selectAll" style="font-weight: bold; cursor: pointer; color: #667eea;">تحديد الكل / إلغاء تحديد الكل</label>
+                <span id="selectedCount" style="margin-right: 15px; font-weight: bold; color: #667eea;"></span>
+            </div>
+            <form method="POST" action="{% url 'export_orders' %}" id="exportForm">
+                {% csrf_token %}
+                <button type="submit" class="btn-action" style="background: #28a745; color: white; padding: 10px 20px; border-radius: 5px; border: none; cursor: pointer; font-weight: bold;">
+                    📊 تصدير الطلبات المحددة إلى Excel
+                </button>
+            </form>
+        </div>
+        {% endif %}
+    </div>
+
+    {% if orders %}
+        {% for order in orders %}
+        <div class="order-card">
+            <div class="order-header">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <input type="checkbox" name="order_ids" value="{{ order.id }}" form="exportForm" class="order-checkbox" style="width: 20px; height: 20px; cursor: pointer;">
+                    <div class="order-id">طلب #{{ order.id }}</div>
+                </div>
+                <div class="order-status status-{{ order.status }}">
+                    {{ order.get_status_display }}
+                </div>
+            </div>
+
+            <div class="order-details">
+                <div class="detail-item">
+                    <div class="detail-label">اسم العميل</div>
+                    <div class="detail-value">{{ order.nom }}</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">رقم الهاتف</div>
+                    <div class="detail-value">{{ order.telephone }}</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">الولاية</div>
+                    <div class="detail-value">{{ order.wilaya }}</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">المدينة</div>
+                    <div class="detail-value">{{ order.ville }}</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">تاريخ الطلب</div>
+                    <div class="detail-value">{{ order.date_commande|date:"Y-m-d H:i" }}</div>
+                </div>
+            </div>
+
+            {% if order.notes %}
+            <div class="detail-item" style="margin-top: 10px;">
+                <div class="detail-label">ملاحظات</div>
+                <div class="detail-value">{{ order.notes }}</div>
+            </div>
+            {% endif %}
+
+            <div class="order-items">
+                <h4>المنتجات المطلوبة:</h4>
+                {% for item in order.orderitem_set.all %}
+                <div class="item-row">
+                    <span>{{ item.produit.nom }} × {{ item.quantite }}</span>
+                    <span>{{ item.total }} د.ت</span>
+                </div>
+                {% endfor %}
+                <div class="item-row">
+                    <span>المجموع الكلي</span>
+                    <span>{{ order.total }} د.ت</span>
+                </div>
+            </div>
+
+            <div class="action-buttons">
+                {% if order.status == 'pending' %}
+                <form method="POST" action="{% url 'update_order_status' order.id %}" style="display: inline;">
+                    {% csrf_token %}
+                    <input type="hidden" name="status" value="confirmed">
+                    <button type="submit" class="btn-action btn-confirm">✓ تأكيد الطلب</button>
+                </form>
+                <form method="POST" action="{% url 'update_order_status' order.id %}" style="display: inline;">
+                    {% csrf_token %}
+                    <input type="hidden" name="status" value="cancelled">
+                    <button type="submit" class="btn-action btn-cancel">✗ إلغاء الطلب</button>
+                </form>
+                {% elif order.status == 'confirmed' %}
+                <form method="POST" action="{% url 'update_order_status' order.id %}" style="display: inline;">
+                    {% csrf_token %}
+                    <input type="hidden" name="status" value="completed">
+                    <button type="submit" class="btn-action btn-complete">✓ تم التوصيل</button>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="empty-state">
+            <div style="font-size: 4em; margin-bottom: 20px;">📦</div>
+            <h3>لا توجد طلبات</h3>
+            <p>لم يتم استقبال أي طلبات بعد</p>
+        </div>
+    {% endif %}
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const selectAllCheckbox = document.getElementById('selectAll');
+        const checkboxes = document.querySelectorAll('.order-checkbox');
+        const selectedCount = document.getElementById('selectedCount');
+        const exportForm = document.getElementById('exportForm');
+        
+        function updateCount() {
+            const checked = document.querySelectorAll('.order-checkbox:checked').length;
+            const total = checkboxes.length;
+            
+            if (checked > 0) {
+                selectedCount.textContent = `تم اختيار ${checked} طلب`;
+            } else {
+                selectedCount.textContent = '';
+            }
+            
+            // Update select all checkbox state
+            if (selectAllCheckbox) {
+                selectAllCheckbox.checked = (checked === total && total > 0);
+                selectAllCheckbox.indeterminate = (checked > 0 && checked < total);
+            }
+        }
+        
+        // Select all checkbox functionality
+        if (selectAllCheckbox) {
+            selectAllCheckbox.addEventListener('change', function() {
+                checkboxes.forEach(checkbox => {
+                    checkbox.checked = this.checked;
+                });
+                updateCount();
+            });
+        }
+        
+        // Individual checkbox change
+        checkboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', updateCount);
+        });
+        
+        // Form validation
+        exportForm.addEventListener('submit', function(e) {
+            const checked = document.querySelectorAll('.order-checkbox:checked').length;
+            if (checked === 0) {
+                e.preventDefault();
+                alert('الرجاء اختيار طلب واحد على الأقل');
+            }
+        });
+        
+        updateCount();
+    });
+</script>
+{% endblock %}
