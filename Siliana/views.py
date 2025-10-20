@@ -8,6 +8,8 @@ from django.db import transaction
 from django.http import HttpResponse
 from openpyxl import Workbook
 from openpyxl.styles import Font, Alignment, PatternFill, Border, Side
+from django.core.mail import send_mail
+from django.conf import settings
 
 
 def user_login(request):
@@ -169,6 +171,7 @@ def public_order(request):
     
     if request.method == 'POST':
         nom = request.POST.get('nom')
+        email = request.POST.get('email', '').strip()
         wilaya = request.POST.get('wilaya')
         ville = request.POST.get('ville')
         telephone = request.POST.get('telephone')
@@ -183,12 +186,14 @@ def public_order(request):
             with transaction.atomic():
                 order = Order.objects.create(
                     nom=nom,
+                    email=email if email else None,
                     wilaya=wilaya,
                     ville=ville,
                     telephone=telephone
                 )
                 
                 has_items = False
+                order_items_list = []
                 for produit in produits:
                     quantity_key = f'product_{produit.id}'
                     quantite = request.POST.get(quantity_key, '0')
@@ -200,12 +205,13 @@ def public_order(request):
                     
                     if quantite > 0:
                         if quantite <= produit.quantite:
-                            OrderItem.objects.create(
+                            order_item = OrderItem.objects.create(
                                 order=order,
                                 produit=produit,
                                 quantite=quantite,
                                 prix=produit.prix_vente
                             )
+                            order_items_list.append(order_item)
                             has_items = True
                         else:
                             messages.error(request, f'الكمية المطلوبة من {produit.nom} غير متوفرة')
@@ -216,7 +222,62 @@ def public_order(request):
                     messages.error(request, 'الرجاء اختيار منتج واحد على الأقل')
                     return render(request, 'public_order.html', {'produits': produits})
                 
-                messages.success(request, '✓ تم إرسال طلبك بنجاح! سنتصل بك قريباً')
+                # Send confirmation email if email was provided
+                if email:
+                    try:
+                        # Build order details for email
+                        items_text = "\n".join([
+                            f"• {item.produit.nom} - الكمية: {item.quantite} - السعر: {item.total()} د.ت"
+                            for item in order_items_list
+                        ])
+                        
+                        subject = f'تأكيد طلبك رقم #{order.id} - مزرعة نوادر التين'
+                        message = f'''
+مرحباً {nom}،
+
+شكراً لك على طلبك من مزرعة نوادر التين! 🌿
+
+تفاصيل طلبك:
+━━━━━━━━━━━━━━━━━━
+رقم الطلب: #{order.id}
+التاريخ: {order.date_commande.strftime('%Y-%m-%d %H:%M')}
+
+معلومات التوصيل:
+• الاسم: {nom}
+• الهاتف: {telephone}
+• الولاية: {wilaya}
+• المدينة: {ville}
+
+المنتجات المطلوبة:
+{items_text}
+
+━━━━━━━━━━━━━━━━━━
+المجموع الكلي: {order.total()} د.ت
+━━━━━━━━━━━━━━━━━━
+
+الحالة: قيد الانتظار
+
+سنتصل بك قريباً لتأكيد طلبك.
+
+للاستفسار:
+☎ 20.707.272
+
+شكراً لثقتك بنا! 🙏
+مزرعة نوادر التين
+                        '''
+                        
+                        send_mail(
+                            subject=subject,
+                            message=message,
+                            from_email=settings.DEFAULT_FROM_EMAIL,
+                            recipient_list=[email],
+                            fail_silently=True,
+                        )
+                    except Exception as email_error:
+                        # Log error but don't fail the order
+                        print(f"Email sending failed: {email_error}")
+                
+                messages.success(request, '✓ تم إرسال طلبك بنجاح! سنتصل بك قريباً' + (' وتم إرسال نسخة إلى بريدك الإلكتروني.' if email else ''))
                 return redirect('public_order')
                 
         except Exception as e:

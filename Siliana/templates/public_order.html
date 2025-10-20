@@ -242,6 +242,12 @@
                 <input type="tel" id="telephone" name="telephone" required placeholder="مثال: 20123456">
             </div>
 
+            <div class="form-group">
+                <label for="email">البريد الإلكتروني (اختياري)</label>
+                <input type="email" id="email" name="email" placeholder="مثال: example@email.com">
+                <small style="color: #666; font-size: 0.9em;">سنرسل لك نسخة من طلبك عبر البريد الإلكتروني</small>
+            </div>
+
             <div class="product-list">
                 <h2 style="color: #667eea; margin-bottom: 20px;">المنتجات المتوفرة</h2>
                 
@@ -254,7 +260,7 @@
                     
                     <div class="product-status">
                         {% if produit.quantite > 0 %}
-                            <span class="available">✓ متوفر ({{ produit.quantite }} قطعة)</span>
+                            <span class="available">✓ متوفر </span>
                         {% else %}
                             <span class="unavailable-text">✗ المنتج الآن غير متوفر</span>
                         {% endif %}
@@ -268,7 +274,7 @@
                                name="product_{{ produit.id }}" 
                                min="0" 
                                max="{{ produit.quantite }}" 
-                               value="0"
+                               value=""
                                class="product-quantity">
                     </div>
                     {% endif %}

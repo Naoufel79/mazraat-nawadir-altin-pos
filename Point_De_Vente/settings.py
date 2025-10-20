@@ -128,10 +128,17 @@ LOGIN_REDIRECT_URL = 'home'
 LOGOUT_REDIRECT_URL = 'login'
 
 # Email settings
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'your_email@gmail.com'  # Replace with your Gmail address
-EMAIL_HOST_PASSWORD = 'your_app_password'  # Replace with your Gmail app password
-DEFAULT_FROM_EMAIL = 'your_email@gmail.com'  # Replace with your Gmail address
+# For testing: Emails will be printed to console
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+DEFAULT_FROM_EMAIL = 'مزرعة نوادر التين <noreply@mazraat-nawadir.tn>'
+
+# For production: Uncomment and configure with your SMTP details
+# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# EMAIL_HOST = 'smtp.gmail.com'
+# EMAIL_PORT = 587
+# EMAIL_USE_TLS = True
+# EMAIL_HOST_USER = 'your_email@gmail.com'
+# EMAIL_HOST_PASSWORD = 'your_app_password'  # Use App Password for Gmail
+# DEFAULT_FROM_EMAIL = 'مزرعة نوادر التين <your_email@gmail.com>'
+
+# See EMAIL_CONFIGURATION.md for detailed setup instructions

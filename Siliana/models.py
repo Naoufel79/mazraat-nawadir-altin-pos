@@ -47,6 +47,7 @@ class Order(models.Model):
     ]
     
     nom = models.CharField("الاسم", max_length=100)
+    email = models.EmailField("البريد الإلكتروني", max_length=254, blank=True, null=True)
     wilaya = models.CharField("الولاية", max_length=100)
     ville = models.CharField("المدينة", max_length=100)
     telephone = models.CharField("رقم الهاتف", max_length=20)
