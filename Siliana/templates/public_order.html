@@ -12,18 +12,46 @@
             box-sizing: border-box;
         }
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Cairo', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             padding: 20px;
+            position: relative;
+        }
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(255,255,255,0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(255,255,255,0.1) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
         }
         .container {
             max-width: 800px;
             margin: 0 auto;
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
             overflow: hidden;
+            position: relative;
+            z-index: 1;
+            animation: fadeIn 0.6s ease-out;
+        }
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
         .header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -87,15 +115,23 @@
             padding-top: 20px;
         }
         .product-item {
-            background: #f8f9fa;
-            padding: 15px;
-            margin-bottom: 15px;
-            border-radius: 8px;
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 16px;
             border: 2px solid #e9ecef;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        .product-item:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(102, 126, 234, 0.15);
+            border-color: #667eea40;
         }
         .product-item.unavailable {
-            background: #ffe6e6;
+            background: linear-gradient(135deg, #ffe6e6 0%, #fff5f5 100%);
             border-color: #ffcccc;
+            opacity: 0.7;
         }
         .product-header {
             display: flex;
@@ -172,6 +208,71 @@
         .required {
             color: #dc3545;
         }
+        .product-content {
+            display: flex;
+            gap: 15px;
+            align-items: flex-start;
+        }
+        .product-image-left {
+            flex-shrink: 0;
+        }
+        .product-details {
+            flex: 1;
+        }
+        .email-group {
+            background: linear-gradient(135deg, #f8f9ff 0%, #e8f2ff 100%);
+            border: 2px solid #667eea20;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.1);
+        }
+        .email-group label {
+            color: #667eea;
+            font-size: 1.1em;
+            margin-bottom: 12px;
+        }
+        .email-input {
+            width: 100%;
+            padding: 16px 20px;
+            border: 2px solid #667eea40;
+            border-radius: 10px;
+            font-size: 18px;
+            transition: all 0.3s ease;
+            background: white;
+            color: #333;
+            font-weight: 500;
+        }
+        .email-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+            transform: translateY(-1px);
+        }
+        .email-input::placeholder {
+            color: #aab0b6;
+            font-style: italic;
+        }
+        .email-help {
+            display: flex;
+            align-items: center;
+            margin-top: 10px;
+            padding: 12px 16px;
+            background: rgba(102, 126, 234, 0.05);
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+        .email-icon {
+            font-size: 20px;
+            margin-left: 10px;
+            color: #667eea;
+        }
+        .email-text {
+            color: #555;
+            font-size: 14px;
+            line-height: 1.4;
+            font-weight: 500;
+        }
     </style>
 </head>
 <body>
@@ -242,10 +343,13 @@
                 <input type="tel" id="telephone" name="telephone" required placeholder="مثال: 20123456">
             </div>
 
-            <div class="form-group">
-                <label for="email">البريد الإلكتروني (اختياري)</label>
-                <input type="email" id="email" name="email" placeholder="مثال: example@email.com">
-                <small style="color: #666; font-size: 0.9em;">سنرسل لك نسخة من طلبك عبر البريد الإلكتروني</small>
+            <div class="form-group email-group">
+                <label for="email">📧 البريد الإلكتروني (اختياري)</label>
+                <input type="email" id="email" name="email" placeholder="example@email.com" class="email-input">
+                <div class="email-help">
+                    <i class="email-icon">✉️</i>
+                    <span class="email-text">سنرسل لك نسخة من طلبك عبر البريد الإلكتروني</span>
+                </div>
             </div>
 
             <div class="product-list">
@@ -253,31 +357,41 @@
                 
                 {% for produit in produits %}
                 <div class="product-item {% if produit.quantite == 0 %}unavailable{% endif %}">
-                    <div class="product-header">
-                        <span class="product-name">{{ produit.nom }}</span>
-                        <span class="product-price">{{ produit.prix_vente }} د.ت</span>
-                    </div>
-                    
-                    <div class="product-status">
-                        {% if produit.quantite > 0 %}
-                            <span class="available">✓ متوفر </span>
-                        {% else %}
-                            <span class="unavailable-text">✗ المنتج الآن غير متوفر</span>
+                    <div class="product-content">
+                        {% if produit.image %}
+                        <div class="product-image-left">
+                            <img src="{{ produit.image.url }}" alt="{{ produit.nom }}" style="width: 150px; height: 150px; object-fit: cover; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); transition: transform 0.3s ease;">
+                        </div>
                         {% endif %}
+
+                        <div class="product-details">
+                            <div class="product-header">
+                                <span class="product-name">{{ produit.nom }}</span>
+                                <span class="product-price">{{ produit.prix_vente }} د.ت</span>
+                            </div>
+
+                            <div class="product-status">
+                                {% if produit.quantite > 0 %}
+                                    <span class="available">✓ متوفر </span>
+                                {% else %}
+                                    <span class="unavailable-text">✗ المنتج الآن غير متوفر</span>
+                                {% endif %}
+                            </div>
+
+                            {% if produit.quantite > 0 %}
+                            <div class="quantity-control">
+                                <label for="product_{{ produit.id }}">الكمية:</label>
+                                <input type="number"
+                                       id="product_{{ produit.id }}"
+                                       name="product_{{ produit.id }}"
+                                       min="0"
+                                       max="{{ produit.quantite }}"
+                                       value=""
+                                       class="product-quantity">
+                            </div>
+                            {% endif %}
+                        </div>
                     </div>
-                    
-                    {% if produit.quantite > 0 %}
-                    <div class="quantity-control">
-                        <label for="product_{{ produit.id }}">الكمية:</label>
-                        <input type="number" 
-                               id="product_{{ produit.id }}" 
-                               name="product_{{ produit.id }}" 
-                               min="0" 
-                               max="{{ produit.quantite }}" 
-                               value=""
-                               class="product-quantity">
-                    </div>
-                    {% endif %}
                 </div>
                 {% endfor %}
             </div>

@@ -1,12 +1,30 @@
 from django.contrib import admin
+from django.utils.html import format_html
 from .models import Produit, Achat, Vente, Order, OrderItem
 
 
 @admin.register(Produit)
 class ProduitAdmin(admin.ModelAdmin):
-    list_display = ('nom', 'quantite', 'prix_achat', 'prix_vente')
+    list_display = ('image_thumbnail', 'nom', 'quantite', 'prix_achat', 'prix_vente')
+    list_display_links = ('image_thumbnail', 'nom')
     search_fields = ('nom',)
     list_filter = ('quantite',)
+    readonly_fields = ('image_preview',)
+    fields = ('nom', 'quantite', 'prix_achat', 'prix_vente', 'image', 'image_preview')
+
+    def image_thumbnail(self, obj):
+        if obj.image:
+            return format_html('<img src="{}" width="50" height="50" style="object-fit: cover; border-radius: 5px;" alt="{}" />',
+                             obj.image.url, obj.nom)
+        return format_html('<span style="color: #999; font-style: italic;">لا توجد صورة</span>')
+    image_thumbnail.short_description = 'صورة'
+
+    def image_preview(self, obj):
+        if obj.image:
+            return format_html('<img src="{}" width="150" height="150" style="object-fit: cover; border-radius: 5px;" alt="{} - معاينة" />',
+                             obj.image.url, obj.nom)
+        return format_html('<span style="color: #999; font-style: italic;">لا توجد صورة للمعاينة</span>')
+    image_preview.short_description = 'معاينة الصورة'
 
 
 @admin.register(Achat)

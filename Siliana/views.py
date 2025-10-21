@@ -70,33 +70,44 @@ def add_product(request):
         quantite = request.POST.get('quantite', 0)
         prix_achat = request.POST.get('prix_achat')
         prix_vente = request.POST.get('prix_vente')
-        
-        Produit.objects.create(
+        image = request.FILES.get('image')
+
+        produit = Produit.objects.create(
             nom=nom,
             quantite=quantite,
             prix_achat=prix_achat,
             prix_vente=prix_vente
         )
+
+        if image:
+            produit.image = image
+            produit.save()
+
         messages.success(request, f'تم إضافة المنتج "{nom}" بنجاح')
         return redirect('product_list')
-    
+
     return render(request, 'product_form.html')
 
 
 @login_required
 def edit_product(request, product_id):
     product = get_object_or_404(Produit, id=product_id)
-    
+
     if request.method == 'POST':
         product.nom = request.POST.get('nom')
         product.quantite = request.POST.get('quantite')
         product.prix_achat = request.POST.get('prix_achat')
         product.prix_vente = request.POST.get('prix_vente')
+
+        image = request.FILES.get('image')
+        if image:
+            product.image = image
+
         product.save()
-        
+
         messages.success(request, f'تم تحديث المنتج "{product.nom}" بنجاح')
         return redirect('product_list')
-    
+
     return render(request, 'product_form.html', {'product': product})
 
 

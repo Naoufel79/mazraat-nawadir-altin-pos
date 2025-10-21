@@ -5,6 +5,7 @@ class Produit(models.Model):
     quantite = models.PositiveIntegerField("الكمية في المخزون", default=0)
     prix_achat = models.DecimalField("سعر الشراء (دينار)", max_digits=10, decimal_places=2)
     prix_vente = models.DecimalField("سعر البيع (دينار)", max_digits=10, decimal_places=2)
+    image = models.ImageField("صورة المنتج", upload_to='products/', blank=True, null=True)
 
     def __str__(self):
         return self.nom
