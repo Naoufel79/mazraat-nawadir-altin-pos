@@ -5,12 +5,12 @@ from .models import Produit, Achat, Vente, Order, OrderItem
 
 @admin.register(Produit)
 class ProduitAdmin(admin.ModelAdmin):
-    list_display = ('image_thumbnail', 'nom', 'quantite', 'prix_achat', 'prix_vente')
+    list_display = ('image_thumbnail', 'nom', 'quantite', 'prix_achat', 'prix_vente', 'has_description')
     list_display_links = ('image_thumbnail', 'nom')
     search_fields = ('nom',)
     list_filter = ('quantite',)
     readonly_fields = ('image_preview',)
-    fields = ('nom', 'quantite', 'prix_achat', 'prix_vente', 'image', 'image_preview')
+    fields = ('nom', 'quantite', 'prix_achat', 'prix_vente', 'image', 'image_preview', 'description')
 
     def image_thumbnail(self, obj):
         if obj.image:
@@ -25,6 +25,12 @@ class ProduitAdmin(admin.ModelAdmin):
                              obj.image.url, obj.nom)
         return format_html('<span style="color: #999; font-style: italic;">لا توجد صورة للمعاينة</span>')
     image_preview.short_description = 'معاينة الصورة'
+    
+    def has_description(self, obj):
+        if obj.description:
+            return format_html('<span style="color: green;">✓</span>')
+        return format_html('<span style="color: red;">✗</span>')
+    has_description.short_description = 'له وصف'
 
 
 @admin.register(Achat)

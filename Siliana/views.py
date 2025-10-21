@@ -344,6 +344,18 @@ def update_order_status(request, order_id):
     return redirect('orders_list')
 
 
+def product_detail(request, product_id):
+    """Public product detail page showing product information and description"""
+    produit = get_object_or_404(Produit, id=product_id)
+    return render(request, 'product_detail.html', {'produit': produit})
+
+
+def products_catalog(request):
+    """Public products catalog page showing all products"""
+    produits = Produit.objects.all().order_by('nom')
+    return render(request, 'products_catalog.html', {'produits': produits})
+
+
 @login_required
 def export_orders(request):
     """Export selected orders to Excel for transporter"""
