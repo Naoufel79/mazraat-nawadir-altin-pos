@@ -22,6 +22,7 @@ wheels/
 # Django
 *.log
 local_settings.py
+Point_De_Vente/settings.py
 db.sqlite3
 db.sqlite3-journal
 /media
