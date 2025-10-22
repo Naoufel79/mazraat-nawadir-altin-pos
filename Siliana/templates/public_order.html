@@ -578,7 +578,7 @@
         <div class="form-container">
         {% if messages %}
             {% for message in messages %}
-                <div class="alert alert-{{ message.tags }}">
+                <div class="alert alert-{{ message.tags }}" id="messageAlert">
                     {{ message }}
                 </div>
             {% endfor %}
@@ -819,9 +819,6 @@
                 summaryDiv.style.display = 'block';
                 summaryItems.innerHTML = summaryHTML;
                 totalAmount.textContent = total.toFixed(2) + ' د.ت';
-                
-                // Smooth scroll to summary
-                summaryDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
             } else {
                 summaryDiv.style.display = 'none';
             }
@@ -831,6 +828,8 @@
         }
         
         document.getElementById('orderForm').addEventListener('submit', function(e) {
+            e.preventDefault(); // Always prevent default first
+            
             let hasProducts = false;
             const quantities = document.querySelectorAll('.product-quantity');
             
@@ -841,11 +840,18 @@
             });
             
             if (!hasProducts) {
-                e.preventDefault();
                 alert('الرجاء اختيار منتج واحد على الأقل');
-            } else {
-                // Clear storage after successful submission
+                return;
+            }
+            
+            // Show confirmation dialog
+            const confirmed = confirm('هل أنت متأكد من إرسال طلبك؟\n\nسيتم إرسال طلبك وسنتصل بك قريباً.');
+            
+            if (confirmed) {
+                // Clear storage before submission
                 clearOrderFromStorage();
+                // Submit the form
+                this.submit();
             }
         });
 
@@ -865,7 +871,29 @@
             
             // Update summary
             updateOrderSummary();
+            
+            // Scroll to success/error message if exists after order submission
+            const alertDiv = document.getElementById('messageAlert');
+            if (alertDiv) {
+                setTimeout(function() {
+                    // Scroll to top of page to show the message
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                    
+                    // Add emphasis animation
+                    alertDiv.style.animation = 'pulse 0.5s ease-in-out 2';
+                }, 100);
+            }
         });
+        
+        // Add pulse animation for message alert
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes pulse {
+                0%, 100% { transform: scale(1); }
+                50% { transform: scale(1.02); box-shadow: 0 8px 24px rgba(102, 126, 234, 0.3); }
+            }
+        `;
+        document.head.appendChild(style);
     </script>
 </body>
 </html>
